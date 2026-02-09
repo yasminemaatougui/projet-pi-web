@@ -75,7 +75,14 @@ class ReservationController extends AbstractController
             return $this->redirectToRoute('app_evenement_show', ['id' => $evenement->getId()]);
         }
 
-        // Check availability
+        // Vérifier si l'événement est déjà passé
+        $now = new \DateTime();
+        if ($evenement->getDateDebut() < $now) {
+            $this->addFlash('danger', 'Impossible de réserver un événement déjà passé.');
+            return $this->redirectToRoute('app_evenement_show', ['id' => $evenement->getId()]);
+        }
+
+        // Vérifier la disponibilité des places
         if ($evenement->getReservations()->count() >= $evenement->getNbPlaces()) {
             $this->addFlash('danger', 'Désolé, cet événement est complet.');
             return $this->redirectToRoute('app_evenement_show', ['id' => $evenement->getId()]);

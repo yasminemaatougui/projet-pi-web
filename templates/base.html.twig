@@ -156,6 +156,8 @@
                         {% if not is_granted('ROLE_ARTISTE') %}
                             <li>
                                 <a href="{{ path('app_evenement_index') }}"><i class="fas fa-search me-2"></i> Voir les Événements</a>
+                            </li>
+                            <li>
                                 <a href="{{ path('app_produit_index') }}"><i class="fas fa-store me-2"></i> Boutique Solidaire</a>
                             </li>
                         {% endif %}

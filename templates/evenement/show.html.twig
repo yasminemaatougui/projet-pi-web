@@ -105,9 +105,15 @@
                             <i class="fas fa-info-circle me-2"></i> Les administrateurs ne peuvent pas effectuer de réservations.
                         </div>
                     {% elseif is_granted('ROLE_PARTICIPANT') %}
+                        {% set isEventPassed = "now"|date('Y-m-d H:i:s') > evenement.dateDebut|date('Y-m-d H:i:s') %}
+                        
                         {% if hasReserved %}
                             <div class="alert alert-success">
                                 <i class="fas fa-check-circle me-2"></i> Vous avez déjà réservé une place.
+                            </div>
+                        {% elseif isEventPassed %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-calendar-times me-2"></i> Les réservations sont closes pour cet événement.
                             </div>
                         {% elseif evenement.nbPlaces - evenement.reservations|length > 0 %}
                             <p>Réservez votre place dès maintenant !</p>
@@ -117,7 +123,7 @@
                                 </div>
                             </form>
                         {% else %}
-                             <div class="alert alert-warning">
+                            <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle me-2"></i> Cet événement est complet.
                             </div>
                         {% endif %}
