@@ -19,8 +19,16 @@ class ReservationController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function myReservations(ReservationRepository $reservationRepository): Response
     {
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        
+        $reservations = $isAdmin 
+            ? $reservationRepository->findBy([], ['dateReservation' => 'DESC'])
+            : $reservationRepository->findBy(['participant' => $this->getUser()], ['dateReservation' => 'DESC']);
+
         return $this->render('reservation/my_reservations.html.twig', [
-            'reservations' => $reservationRepository->findBy(['participant' => $this->getUser()], ['dateReservation' => 'DESC']),
+            'reservations' => $reservations,
+            'isAdmin' => $isAdmin,
+            'pageTitle' => $isAdmin ? 'Gestion des Réservations' : 'Mes Réservations'
         ]);
     }
 

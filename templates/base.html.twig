@@ -21,8 +21,7 @@
                 flex: 1;
             }
             #sidebar {
-                min-width: 250px;
-                max-width: 250px;
+                min-width: fit-content;
                 background: #343a40;
                 color: #fff;
                 transition: all 0.3s;
@@ -33,8 +32,21 @@
                 top: 0;
             }
             #sidebar .sidebar-header {
-                padding: 20px;
+                padding: 15px 20px;
                 background: #2b3035;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            #sidebar .sidebar-header h3 {
+                margin: 0;
+                color: #fff;
+            }
+            #sidebar .sidebar-header img {
+                max-width: 100%;
+                height: 35px;
+                width: 35px;
+                border-radius: 50%;
             }
             #sidebar ul.components {
                 padding: 20px 0;
@@ -105,7 +117,8 @@
                 <!-- Sidebar -->
                 <nav id="sidebar">
                     <div class="sidebar-header">
-                        <h3>🎨</h3>
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="img-fluid">
+                        <h3>ART CONNECT</h3>
                     </div>
 
                     <ul class="list-unstyled components flex-grow-1">
@@ -143,13 +156,14 @@
                         {% if not is_granted('ROLE_ARTISTE') %}
                             <li>
                                 <a href="{{ path('app_evenement_index') }}"><i class="fas fa-search me-2"></i> Voir les Événements</a>
-                            </li>
-                            <li>
                                 <a href="{{ path('app_produit_index') }}"><i class="fas fa-store me-2"></i> Boutique Solidaire</a>
                             </li>
                         {% endif %}
                         <li>
-                            <a href="{{ path('app_reservation_my') }}"><i class="fas fa-ticket-alt me-2"></i> Mes Réservations</a>
+                            <a href="{{ path('app_reservation_my') }}">
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                {{ is_granted('ROLE_ADMIN') ? 'Gestion des Réservations' : 'Mes Réservations' }}
+                            </a>
                         </li>
                         <li>
                             <a href="{{ path('app_donation_my') }}"><i class="fas fa-hand-holding-heart me-2"></i> Mes Dons</a>
