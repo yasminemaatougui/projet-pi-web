@@ -12,6 +12,70 @@
         {% endif %}
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="{{ path('app_reservation_my') }}" class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Recherche</label>
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        value="{{ filter_input.q|default('') }}"
+                        placeholder="Evenement, lieu, participant"
+                    >
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Date debut</label>
+                    <input
+                        type="date"
+                        name="date_start"
+                        class="form-control"
+                        value="{{ filter_input.date_start|default('') }}"
+                    >
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Date fin</label>
+                    <input
+                        type="date"
+                        name="date_end"
+                        class="form-control"
+                        value="{{ filter_input.date_end|default('') }}"
+                    >
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Statut</label>
+                    <select name="status" class="form-select">
+                        <option value="" {{ filter_input.status|default('') == '' ? 'selected' : '' }}>Tous</option>
+                        <option value="CONFIRMED" {{ filter_input.status|default('') == 'CONFIRMED' ? 'selected' : '' }}>CONFIRMED</option>
+                        <option value="CANCELLED" {{ filter_input.status|default('') == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label">Tri</label>
+                    <select name="sort" class="form-select">
+                        <option value="date_desc" {{ filter_input.sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>
+                            Reservation (recent -> ancien)
+                        </option>
+                        <option value="date_asc" {{ filter_input.sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>
+                            Reservation (ancien -> recent)
+                        </option>
+                        <option value="event_date_desc" {{ filter_input.sort|default('date_desc') == 'event_date_desc' ? 'selected' : '' }}>
+                            Evenement (recent -> ancien)
+                        </option>
+                        <option value="event_date_asc" {{ filter_input.sort|default('date_desc') == 'event_date_asc' ? 'selected' : '' }}>
+                            Evenement (ancien -> recent)
+                        </option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary">Filtrer</button>
+                    <a class="btn btn-outline-secondary" href="{{ path('app_reservation_my') }}">Reinitialiser</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {% if reservations is empty %}
         <div class="alert alert-info">
             {% if isAdmin %}
@@ -91,5 +155,24 @@
                 {% endfor %}
             </div>
         {% endif %}
+    {% endif %}
+
+    {% if total_pages > 1 %}
+        {% set query = filter_input|default({}) %}
+        <nav class="mt-4" aria-label="Pagination">
+            <ul class="pagination justify-content-center flex-wrap">
+                <li class="page-item {{ page == 1 ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: page == 1 ? 1 : page - 1})) }}">Precedent</a>
+                </li>
+                {% for i in 1..total_pages %}
+                    <li class="page-item {{ page == i ? 'active' : '' }}">
+                        <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: i})) }}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {{ page == total_pages ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: page == total_pages ? total_pages : page + 1})) }}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
     {% endif %}
 {% endblock %}

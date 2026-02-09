@@ -29,7 +29,6 @@ class EvenementType extends AbstractType
                 'label' => 'Date de début',
                 'widget' => 'single_text',
                 'html5' => true,
-                'input' => 'datetime_immutable',
                 'attr' => [
                     'class' => 'form-control',
                 ],
@@ -39,7 +38,6 @@ class EvenementType extends AbstractType
                 'label' => 'Date de fin',
                 'widget' => 'single_text',
                 'html5' => true,
-                'input' => 'datetime_immutable',
                 'attr' => [
                     'class' => 'form-control',
                 ],
