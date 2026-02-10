@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le Don{% endblock %}
+
+{% block body %}
+    <h1>Modifier le Don #{{ donation.id }}</h1>
+
+    <div class="card p-4 shadow-sm">
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <div class="mt-3">
+            <button class="btn btn-success">Enregistrer les modifications</button>
+            <a href="{{ path('app_donation_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
