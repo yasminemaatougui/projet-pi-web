@@ -1,0 +1,13 @@
+{% extends 'back/base_back.html.twig' %}
+
+{% block title %}Modifier ma réponse{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Modifier ma réponse</h1>
+
+        {{ include('forum_reponse/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+
+        <a href="{{ path('app_forum_show', {'id': forum_reponse.forum.id}) }}" class="btn btn-secondary">Retour</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - ArtConnect{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .hero-section {
+            margin: 0 -2rem;
+        }
+        @media (max-width: 768px) {
+            .hero-section {
+                margin: 0 -1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {# Hero Section avec image de fond locale #}
+    <section class="hero-section">
+        {# Image de fond locale avec transparence #}
+        <div class="hero-background" style="background-image: url('{{ asset('images/background_heder.jpg') }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
+        <div class="hero-overlay" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.65) 0%, rgba(139, 92, 246, 0.65) 100%);"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Bienvenue sur ArtConnect</h1>
+            <p class="hero-subtitle">Plateforme d'organisation et de réservation d'ateliers artistiques inclusifs pour enfants ayant des besoins spécifiques</p>
+            <div class="hero-buttons">
+                <a href="#features" class="btn btn-primary">Découvrir</a>
+                <a href="{{ path('app_evenement_index') }}" class="btn btn-secondary">Voir les événements</a>
+            </div>
+        </div>
+    </section>
+
+    {# Section Features #}
+    <section class="home-section" id="features">
+        <div class="container">
+            <h2 class="section-title">Pourquoi choisir ArtConnect ?</h2>
+            <p class="section-subtitle">Une plateforme dédiée à l'épanouissement artistique de tous les enfants</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🎨</span>
+                    <h3 class="feature-title">Ateliers Artistiques</h3>
+                    <p class="feature-description">
+                        Découvrez une large gamme d'ateliers artistiques adaptés aux besoins spécifiques de chaque enfant. Peinture, sculpture, musique et bien plus encore.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">❤️</span>
+                    <h3 class="feature-title">Approche Inclusive</h3>
+                    <p class="feature-description">
+                        Tous nos ateliers sont conçus pour être accessibles et adaptés aux enfants ayant des besoins spécifiques, dans un environnement bienveillant.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">👥</span>
+                    <h3 class="feature-title">Communauté Bienveillante</h3>
+                    <p class="feature-description">
+                        Rejoignez une communauté de parents, éducateurs et enfants qui partagent les mêmes valeurs d'inclusion et d'épanouissement.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">🎭</span>
+                    <h3 class="feature-title">Événements Réguliers</h3>
+                    <p class="feature-description">
+                        Participez à des événements artistiques réguliers organisés par notre équipe et nos partenaires pour créer des moments inoubliables.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">💝</span>
+                    <h3 class="feature-title">Actions Caritatives</h3>
+                    <p class="feature-description">
+                        Soutenez nos actions caritatives qui permettent à tous les enfants d'accéder aux arts, quels que soient leurs moyens financiers.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">🛍️</span>
+                    <h3 class="feature-title">Boutique</h3>
+                    <p class="feature-description">
+                        Découvrez notre boutique en ligne avec des produits artistiques sélectionnés pour accompagner la créativité de vos enfants.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Section CTA #}
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Prêt à commencer ?</h2>
+            <p class="cta-text">Rejoignez notre communauté et offrez à votre enfant une expérience artistique unique</p>
+            <a href="{{ path('app_evenement_index') }}" class="btn btn-primary">Voir les ateliers disponibles</a>
+        </div>
+    </section>
+{% endblock %}
+
+
+
+

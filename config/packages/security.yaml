@@ -1,0 +1,40 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                success_handler: App\Security\LoginSuccessHandler
+                enable_csrf: true
+            logout:
+                path: app_logout
+                target: app_login
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        # Require authentication for everything else
+        - { path: ^/, roles: ROLE_USER }
+
+    role_hierarchy:
+        ROLE_ARTISTE:     ROLE_USER
+        ROLE_PARTICIPANT: ROLE_USER
+        ROLE_ADMIN:       [ROLE_ARTISTE, ROLE_PARTICIPANT]

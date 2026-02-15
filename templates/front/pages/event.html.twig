@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title }} - ArtConnect{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            border-left-color: var(--accent-orange);
+        }
+        .crud-button {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        .crud-button:hover:not(:disabled) {
+            background-color: var(--accent-orange);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <a href="{{ path('app_home') }}" class="back-button">← Retour à l'accueil</a>
+
+        <div class="page-header">
+        
+        <p>Organisez et gérez les ateliers et événements artistiques inclusifs</p>
+    </div>
+
+    <div class="content-placeholder">
+        <div class="content-placeholder-icon">🎭</div>
+        <h2>Gestion des Événements Artistiques</h2>
+        <p>
+            Cette section permettra de gérer tous les ateliers et événements artistiques de la plateforme.
+            Les fonctionnalités CRUD (Create, Read, Update, Delete) seront implémentées ici.
+        </p>
+        <p>
+            <strong>Fonctionnalités prévues :</strong>
+        </p>
+        <ul style="text-align: left; max-width: 500px; margin: 1rem auto;">
+            <li>Liste des événements et ateliers</li>
+            <li>Création de nouveaux événements</li>
+            <li>Gestion des réservations</li>
+            <li>Modification des détails d'événements</li>
+            <li>Annulation d'événements</li>
+        </ul>
+        <div class="crud-actions">
+            <button class="crud-button" disabled>Créer un événement</button>
+            <button class="crud-button" disabled>Lister les événements</button>
+            <button class="crud-button" disabled>Modifier un événement</button>
+            <button class="crud-button" disabled>Supprimer un événement</button>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+

@@ -1,0 +1,89 @@
+{% extends 'back/base_back.html.twig' %}
+
+{% block title %}{{ evenement.titre }}{% endblock %}
+
+{% block page_title %}{{ evenement.titre }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <h1>{{ evenement.titre }}</h1>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <p class="lead">{{ evenement.description }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <strong>Date de début:</strong><br>
+                            {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : '' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date de fin:</strong><br>
+                            {{ evenement.dateFin ? evenement.dateFin|date('d/m/Y H:i') : '' }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong>Lieu:</strong><br>
+                            {{ evenement.lieu }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Places disponibles:</strong><br>
+                            {{ evenement.nbPlaces }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong>Prix:</strong><br>
+                            {% if evenement.prix %}
+                                {{ evenement.prix }} €
+                            {% else %}
+                                Gratuit
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Âge requis:</strong><br>
+                            {% if evenement.ageMin or evenement.ageMax %}
+                                {% if evenement.ageMin %}{{ evenement.ageMin }}{% endif %}
+                                {% if evenement.ageMin and evenement.ageMax %} - {% endif %}
+                                {% if evenement.ageMax %}{{ evenement.ageMax }}{% endif %}
+                                ans
+                            {% else %}
+                                Tous publics
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <strong>Organisateur:</strong><br>
+                        {{ evenement.organisateur ? evenement.organisateur.prenom ~ ' ' ~ evenement.organisateur.nom : 'N/A' }}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-light text-center py-5 rounded mb-3">
+                            <i class="fas fa-calendar fa-5x text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 d-flex gap-2">
+                <a href="{{ path('admin_evenement_index') }}" class="btn btn-outline-secondary">Retour à la liste</a>
+                <a href="{{ path('admin_evenement_edit', {'id': evenement.id}) }}" class="btn btn-primary">Modifier</a>
+                <form method="post" action="{{ path('admin_evenement_delete', {'id': evenement.id}) }}" 
+                      style="display: inline;" 
+                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

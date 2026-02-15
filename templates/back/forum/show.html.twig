@@ -1,0 +1,75 @@
+{% extends 'back/base_back.html.twig' %}
+
+{% block title %}Forum - {{ forum.sujet }}{% endblock %}
+
+{% block page_title %}{{ forum.sujet }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="mb-3">
+        <a href="{{ path('admin_forum_index') }}" class="btn btn-outline-secondary">Retour</a>
+    </div>
+
+    <!-- Message original -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>{{ forum.sujet }}</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>De:</strong> {{ forum.prenom }} {{ forum.nom }} ({{ forum.email }})</p>
+            <p><strong>Date:</strong> {{ forum.dateCreation ? forum.dateCreation|date('d/m/Y H:i') : '' }}</p>
+            <hr>
+            <p>{{ forum.message }}</p>
+        </div>
+    </div>
+
+    <!-- Réponses -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Réponses ({{ forum.reponses|length }})</h4>
+        </div>
+        <div class="card-body">
+            {% if forum.reponses|length > 0 %}
+                {% for reponse in forum.reponses %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>{{ reponse.auteur.prenom }} {{ reponse.auteur.nom }}</strong>
+                            {% if reponse.auteur.roles and 'ROLE_ADMIN' in reponse.auteur.roles %}
+                                <span class="badge badge-danger">Admin</span>
+                            {% endif %}
+                            <small class="float-end text-muted">{{ reponse.dateReponse ? reponse.dateReponse|date('d/m/Y H:i') : '' }}</small>
+                        </div>
+                        <div class="card-body">
+                            {{ reponse.contenu }}
+                        </div>
+                        {% if app.user and reponse.auteur == app.user %}
+                            <div class="card-footer">
+                                <a href="{{ path('app_forum_reponse_edit', {'id': reponse.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                <form method="post" action="{{ path('app_forum_reponse_delete', {'id': reponse.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réponse ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reponse.id) }}">
+                                    <button class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Aucune réponse pour le moment.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions admin -->
+    {% if is_granted('ROLE_ADMIN') %}
+        <div class="card">
+            <div class="card-body">
+                <h5>Actions</h5>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('admin_forum_edit', {'id': forum.id}) }}" class="btn btn-warning">Modifier</a>
+                    {{ include('back/forum/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

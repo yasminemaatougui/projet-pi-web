@@ -1,0 +1,153 @@
+{% extends 'back/base_back.html.twig' %}
+
+{% block title %}Gestion des Événements{% endblock %}
+
+{% block page_title %}Gestion des Événements{% endblock %}
+
+{% block body %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Événements</h1>
+        <a href="{{ path('admin_evenement_new') }}" class="btn btn-primary">
+            Nouvel Événement
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Rechercher..." 
+                           value="{{ search }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="createdAt" {% if sortBy == 'createdAt' %}selected{% endif %}>
+                            Date
+                        </option>
+                        <option value="titre" {% if sortBy == 'titre' %}selected{% endif %}>
+                            Titre
+                        </option>
+                        <option value="lieu" {% if sortBy == 'lieu' %}selected{% endif %}>
+                            Lieu
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="order" class="form-select">
+                        <option value="DESC" {% if order == 'DESC' %}selected{% endif %}>
+                            Récent
+                        </option>
+                        <option value="ASC" {% if order == 'ASC' %}selected{% endif %}>
+                            Ancien
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Rechercher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Events List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if evenements|length > 0 %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="30%">Titre</th>
+                            <th width="15%">Date</th>
+                            <th width="15%">Lieu</th>
+                            <th width="10%">Prix</th>
+                            <th width="15%">Organisateur</th>
+                            <th width="10%" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evenement in evenements %}
+                            <tr>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">{{ evenement.id }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ path('admin_evenement_show', {'id': evenement.id}) }}" 
+                                       class="text-decoration-none fw-bold">
+                                        {{ evenement.titre }}
+                                    </a>
+                                    <br>
+                                    <small class="text-muted">{{ evenement.description|length > 50 ? evenement.description|slice(0, 50) ~ '...' : evenement.description }}</small>
+                                </td>
+                                <td>
+                                    {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : '' }}
+                                </td>
+                                <td>
+                                    {{ evenement.lieu }}
+                                </td>
+                                <td>
+                                    {% if evenement.prix %}
+                                        {{ evenement.prix }} €
+                                    {% else %}
+                                        Gratuit
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ evenement.organisateur ? evenement.organisateur.prenom ~ ' ' ~ evenement.organisateur.nom : 'N/A' }}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a href="{{ path('admin_evenement_show', {'id': evenement.id}) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Voir
+                                        </a>
+                                        <a href="{{ path('admin_evenement_edit', {'id': evenement.id}) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Modifier
+                                        </a>
+                                        <form method="post" action="{{ path('admin_evenement_delete', {'id': evenement.id}) }}" 
+                                              style="display: inline;" 
+                                              onsubmit="return confirm('Êtes-vous sûr ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center py-5">
+                    <h5 class="text-muted">Aucun événement trouvé</h5>
+                    <p class="text-muted mb-4">
+                        {% if search %}
+                            Aucun événement ne correspond à votre recherche.
+                        {% else %}
+                            Aucun événement pour le moment.
+                        {% endif %}
+                    </p>
+                    <a href="{{ path('admin_evenement_new') }}" class="btn btn-primary">
+                        Créer un événement
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pagination Info -->
+    {% if evenements|length > 0 %}
+    <div class="mt-3 text-center">
+        <small class="text-muted">{{ evenements|length }} événement(s)</small>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

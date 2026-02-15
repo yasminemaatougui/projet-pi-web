@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ArtConnect{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% block stylesheets %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+        }
+        .navbar-logo {
+            height: 50px;
+            width: 50px;
+            background-image: url('/images/logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .navbar-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .navbar-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background 0.3s;
+            font-size: 0.95rem;
+        }
+        .navbar-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .navbar-link.btn-login {
+            background: white;
+            color: #6366f1;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+        .navbar-link.btn-login:hover {
+            background: rgba(255,255,255,0.9);
+        }
+        .navbar-link.btn-register {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            margin-left: 0.5rem;
+        }
+        .navbar-link.btn-register:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        .navbar-link.btn-logout {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            margin-left: 0.5rem;
+        }
+        .navbar-link.btn-logout:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        .user-menu {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-left: auto;
+        }
+    </style>
+    {% endblock %}
+</head>
+<body>
+    {% block navbar %}
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{{ path('app_home') }}" class="navbar-brand">
+                <div class="navbar-logo"></div>
+                <span class="navbar-text">ArtConnect</span>
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ path('app_home') }}" class="navbar-link">Accueil</a></li>
+                <li><a href="{{ path('app_evenement_index') }}" class="navbar-link">Événements</a></li>
+                <li><a href="{{ path('app_produit_index') }}" class="navbar-link">Produits</a></li>
+                <li><a href="{{ path('app_donation_new') }}" class="navbar-link">Charité</a></li>
+                <li><a href="{{ path('app_forum_index') }}" class="navbar-link">Forum</a></li>
+                {% if app.user %}
+                    <li class="user-menu">
+                        <span style="color: white; margin-left: 1rem;">{{ app.user.email }}</span>
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <a href="{{ path('admin_dashboard') }}" class="navbar-link" style="background: rgba(255,102,0,0.3); border-left: 3px solid #ff6600;">🔧 Admin</a>
+                        {% endif %}
+                        <a href="{{ path('app_logout') }}" class="navbar-link btn-logout">Déconnexion</a>
+                    </li>
+                {% else %}
+                    <li class="user-menu">
+                        <a href="{{ path('app_register') }}" class="navbar-link btn-register">S'inscrire</a>
+                        <a href="{{ path('app_login') }}" class="navbar-link btn-login">Se connecter</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    {% endblock %}
+
+    {% block body %}{% endblock %}
+    
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
