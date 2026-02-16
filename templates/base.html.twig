@@ -22,7 +22,6 @@
             }
             #sidebar {
                 min-width: fit-content;
-                background: #343a40;
                 color: #fff;
                 transition: all 0.3s;
                 display: flex;
@@ -33,7 +32,6 @@
             }
             #sidebar .sidebar-header {
                 padding: 15px 20px;
-                background: #2b3035;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -50,7 +48,6 @@
             }
             #sidebar ul.components {
                 padding: 20px 0;
-                border-bottom: 1px solid #47748b;
                 overflow-y: auto;
                 flex-grow: 1; /* Ensure it takes available space */
             }
@@ -67,30 +64,24 @@
             }
             #sidebar ul li a:hover {
                 color: #fff;
-                background: #2b3035;
             }
             #sidebar ul li.active > a {
                 color: #fff;
-                background: #0d6efd;
             }
             .content {
                 width: 100%;
                 padding: 20px;
-                background-color: #f8f9fa;
             }
             /* Custom Scrollbar for Sidebar */
             #sidebar ul.components::-webkit-scrollbar {
                 width: 6px;
             }
             #sidebar ul.components::-webkit-scrollbar-track {
-                background: #343a40; 
             }
             #sidebar ul.components::-webkit-scrollbar-thumb {
-                background: #6c757d; 
                 border-radius: 3px;
             }
             #sidebar ul.components::-webkit-scrollbar-thumb:hover {
-                background: #495057; 
             }
 
             /* Toggle for responsive */
@@ -110,7 +101,6 @@
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body>
         {% if app.user %}
             {# Back-office / Logged-in Layout #}
             <div class="wrapper">
@@ -227,9 +217,6 @@
             </div>
         {% else %}
             {# Guest Layout (Login/Register/Public Home) #}
-            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="{{ path('home') }}">🎨 Art connect</a>
                     <div class="d-flex">
                         <a href="{{ path('login') }}" class="btn btn-outline-primary me-2">Connexion</a>
                         <a href="{{ path('register') }}" class="btn btn-primary">Inscription</a>
@@ -237,7 +224,6 @@
                 </div>
             </nav>
             
-            <div class="container">
                 {# Flash Messages for Guests #}
                 {% for message in app.flashes('success') %}
                     <div class="alert alert-success alert-dismissible fade show" role="alert">

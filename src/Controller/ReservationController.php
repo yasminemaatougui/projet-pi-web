@@ -104,15 +104,11 @@ class ReservationController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function cancel(Reservation $reservation, EntityManagerInterface $entityManager): Response
     {
-        // Allow user to cancel their own reservation
-        if ($reservation->getParticipant() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Vous ne pouvez pas annuler cette réservation.');
         }
 
         $entityManager->remove($reservation);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Réservation annulée.');
 
         return $this->redirectToRoute('app_reservation_my');
     }

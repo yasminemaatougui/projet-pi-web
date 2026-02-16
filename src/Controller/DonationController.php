@@ -50,10 +50,8 @@ class DonationController extends AbstractController
 
     #[Route('/admin', name: 'app_donation_index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function index(DonationRepository $donationRepository): Response
     {
         return $this->render('donation/index.html.twig', [
-            'donations' => $donationRepository->findAll(),
         ]);
     }
 }

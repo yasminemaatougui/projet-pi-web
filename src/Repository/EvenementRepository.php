@@ -86,8 +86,6 @@ class EvenementRepository extends ServiceEntityRepository
         $sortMap = [
             'date_asc' => ['e.dateDebut', 'ASC'],
             'date_desc' => ['e.dateDebut', 'DESC'],
-            'prix_asc' => ['COALESCE(e.prix, 0)', 'ASC'],
-            'prix_desc' => ['COALESCE(e.prix, 0)', 'DESC'],
             'titre_asc' => ['e.titre', 'ASC'],
             'titre_desc' => ['e.titre', 'DESC'],
             'created_desc' => ['e.createdAt', 'DESC'],
@@ -98,9 +96,6 @@ class EvenementRepository extends ServiceEntityRepository
             $sortKey = 'date_asc';
         }
 
-        [$sortField, $sortDir] = $sortMap[$sortKey];
-        $qb->addOrderBy($sortField, $sortDir)
-            ->addOrderBy('e.id', 'DESC');
 
         $query = $qb->getQuery()
             ->setFirstResult(($page - 1) * $perPage)

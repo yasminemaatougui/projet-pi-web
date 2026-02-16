@@ -1,5 +1,4 @@
-
-services:
+﻿services:
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine

@@ -17,18 +17,15 @@
                     <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                 {% endif %}
 
-                <form method="post">
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">Email</label>
                         <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" 
-                               class="form-control" autocomplete="email" required autofocus
                                placeholder="votre.email@example.com">
                     </div>
 
                     <div class="mb-4">
                         <label for="inputPassword" class="form-label">Mot de passe</label>
                         <input type="password" name="_password" id="inputPassword" 
-                               class="form-control" autocomplete="current-password" required
                                placeholder="Votre mot de passe">
                     </div>
 
