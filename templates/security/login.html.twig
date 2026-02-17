@@ -17,19 +17,22 @@
                     <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                 {% endif %}
 
-                <form method="post">
+                <form method="post" novalidate>
                     <div class="mb-3">
                         <label for="inputEmail" class="form-label">Email</label>
                         <input type="email" value="{{ last_username }}" name="_username" id="inputEmail" 
-                               class="form-control" autocomplete="email" required autofocus
+                               class="form-control" autocomplete="email" autofocus
                                placeholder="votre.email@example.com">
                     </div>
 
                     <div class="mb-4">
                         <label for="inputPassword" class="form-label">Mot de passe</label>
                         <input type="password" name="_password" id="inputPassword" 
-                               class="form-control" autocomplete="current-password" required
+                               class="form-control" autocomplete="current-password"
                                placeholder="Votre mot de passe">
+                        <div class="text-end mt-2">
+                            <a href="{{ path('app_forgot_password') }}" class="small">Mot de passe oublie ?</a>
+                        </div>
                     </div>
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
