@@ -23,3 +23,8 @@ services:
     App\Service\ResetPasswordMailer:
         arguments:
             $fromEmail: '%mailer_from%'
+            
+    # Configuration du service d'email personnalisé
+    App\Service\EmailService:
+        arguments:
+            $adminEmail: '%env(string:default:no-reply@artconnect.local:MAILER_FROM%'

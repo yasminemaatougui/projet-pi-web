@@ -115,10 +115,13 @@
         {% for evenement in evenements %}
             <div class="col">
                 <div class="card h-100 shadow-sm">
-                    {# Placeholder image if none provided #}
-                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                        <span class="fs-1">🎨</span>
-                    </div>
+                    {% if evenement.image %}
+                        <img src="{{ asset('images/' ~ evenement.image) }}" class="card-img-top" alt="{{ evenement.titre }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="fs-1">🎨</span>
+                        </div>
+                    {% endif %}
                     
                     <div class="card-body">
                         <h5 class="card-title">{{ evenement.titre }}</h5>
