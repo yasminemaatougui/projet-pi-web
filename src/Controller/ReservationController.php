@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
+use App\Service\EmailService;
 use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -151,3 +152,6 @@ class ReservationController extends AbstractController
         return $date->setTime(0, 0, 0);
     }
 }
+
+
+

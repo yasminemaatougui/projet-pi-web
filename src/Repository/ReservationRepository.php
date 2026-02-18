@@ -23,6 +23,57 @@ class ReservationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reservation::class);
     }
 
+    public function countThisMonth(): int
+    {
+        $startDate = new \DateTime('first day of this month');
+        $endDate = new \DateTime('last day of this month 23:59:59');
+
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.dateReservation BETWEEN :start AND :end')
+            ->setParameter('start', $startDate)
+            ->setParameter('end', $endDate)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countByStatus(): array
+    {
+        // Définir tous les statuts possibles
+        $allStatuses = ['CONFIRMED', 'PENDING', 'CANCELLED'];
+        
+        // Initialiser le tableau de résultats avec des compteurs à zéro
+        $statusCounts = [];
+        foreach ($allStatuses as $status) {
+            $statusCounts[$status] = 0;
+        }
+        
+        // Récupérer les comptes par statut depuis la base de données
+        $results = $this->createQueryBuilder('r')
+            ->select('r.status, COUNT(r.id) as count')
+            ->groupBy('r.status')
+            ->getQuery()
+            ->getResult();
+            
+        // Mettre à jour les compteurs avec les valeurs réelles
+        foreach ($results as $result) {
+            if (in_array($result['status'], $allStatuses)) {
+                $statusCounts[$result['status']] = (int) $result['count'];
+            }
+        }
+        
+        // Formater les résultats dans le format attendu
+        $formattedResults = [];
+        foreach ($statusCounts as $status => $count) {
+            $formattedResults[] = [
+                'status' => $status,
+                'count' => $count
+            ];
+        }
+        
+        return $formattedResults;
+    }
+
     public function searchAndSort(array $filters, int $page, int $perPage, ?User $participant, bool $isAdmin): Paginator
     {
         $qb = $this->createQueryBuilder('r')
