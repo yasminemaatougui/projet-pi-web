@@ -1,598 +1,329 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Statistiques Administrateur{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .stat-card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-bottom: 20px;
-            border: none;
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-        }
-        .stat-card .card-body {
-            padding: 1.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .stat-label {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.25rem;
-        }
-        .stat-percentage {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 400;
-            opacity: 0.9;
-        }
-        .stat-card .card-icon {
-            position: absolute;
-            right: 1.5rem;
-            top: 1.5rem;
-            font-size: 2.5rem;
-            opacity: 0.2;
-            color: white;
-        }
-    </style>
-{% endblock %}
+{% block title %}Tableau de bord — Art Connect{% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">Tableau de bord d'administration</h1>
-            <div class="btn-group" role="group">
-                <button class="btn btn-outline-primary">
-                    <i class="fas fa-filter me-1"></i> Filtrer
-                </button>
-                <button class="btn btn-outline-secondary">
-                    <i class="fas fa-sync-alt me-1"></i> Réinitialiser
-                </button>
-                <button id="toggleStatsBtn" class="btn btn-primary" onclick="toggleStats()">
-                </button>
+<style>
+    .dash-header { margin-bottom:1.25rem; }
+    .dash-header h1 { font-family:'Sora',sans-serif; font-weight:700; font-size:1.4rem; color:var(--ac-deep); margin:0; }
+    .dash-header p { color:#6b7280; font-size:.84rem; margin:.2rem 0 0; }
+
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:.75rem; margin-bottom:1.25rem; }
+    .kpi { background:#fff; border-radius:14px; padding:1rem 1.1rem; box-shadow:0 2px 10px rgba(0,0,0,.04); border:1px solid #f0f0f0; position:relative; overflow:hidden; }
+    .kpi-icon { position:absolute; top:.8rem; right:.8rem; font-size:1.4rem; opacity:.12; }
+    .kpi-val { font-family:'Sora',sans-serif; font-weight:800; font-size:1.6rem; color:var(--ac-deep); line-height:1.1; }
+    .kpi-label { font-size:.72rem; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.04em; margin-top:.25rem; }
+    .kpi-sub { font-size:.7rem; color:#9ca3af; margin-top:.15rem; }
+    .kpi-accent { border-left:3px solid; }
+
+    .dash-row { display:grid; gap:1rem; margin-bottom:1rem; }
+    .dash-2 { grid-template-columns:1fr 1fr; }
+    .dash-3 { grid-template-columns:1fr 1fr 1fr; }
+    .dash-2-1 { grid-template-columns:2fr 1fr; }
+    @media(max-width:992px) { .dash-2,.dash-3,.dash-2-1 { grid-template-columns:1fr; } }
+
+    .dash-card { background:#fff; border-radius:14px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,.04); border:1px solid #f0f0f0; }
+    .dash-card h5 { font-family:'Sora',sans-serif; font-weight:700; font-size:.9rem; color:var(--ac-deep); margin-bottom:.85rem; display:flex; align-items:center; gap:.4rem; }
+    .dash-card h5 i { color:var(--ac-lavender); }
+
+    .mini-table { width:100%; font-size:.8rem; }
+    .mini-table th { font-weight:700; color:#6b7280; font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; padding:.4rem .5rem; border-bottom:2px solid #f3f4f6; }
+    .mini-table td { padding:.45rem .5rem; border-bottom:1px solid #f9fafb; color:#374151; }
+    .mini-table tr:last-child td { border-bottom:none; }
+
+    .progress-sm { height:6px; border-radius:3px; background:#f3f4f6; overflow:hidden; }
+    .progress-sm-fill { height:100%; border-radius:3px; transition:width .4s; }
+
+    .stat-ring { display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px; border-radius:50%; position:relative; }
+    .stat-ring svg { transform:rotate(-90deg); }
+    .stat-ring-val { position:absolute; font-size:.7rem; font-weight:800; color:var(--ac-deep); }
+</style>
+
+<div class="dash-header">
+    <h1><i class="fas fa-chart-line me-2" style="color:var(--ac-lavender);"></i> Tableau de bord</h1>
+    <p>Vue d'ensemble de la plateforme Art Connect</p>
+</div>
+
+{# ===== KPI CARDS ===== #}
+<div class="kpi-grid">
+    <div class="kpi kpi-accent" style="border-color:var(--ac-mid);">
+        <i class="fas fa-users kpi-icon" style="color:var(--ac-mid);"></i>
+        <div class="kpi-val">{{ totalUsers }}</div>
+        <div class="kpi-label">Utilisateurs</div>
+        <div class="kpi-sub">+{{ newUsersThisMonth }} ce mois</div>
+    </div>
+    <div class="kpi kpi-accent" style="border-color:var(--ac-blue);">
+        <i class="fas fa-calendar-alt kpi-icon" style="color:var(--ac-blue);"></i>
+        <div class="kpi-val">{{ eventStats.total }}</div>
+        <div class="kpi-label">Événements</div>
+        <div class="kpi-sub">{{ eventStats.upcoming }} à venir</div>
+    </div>
+    <div class="kpi kpi-accent" style="border-color:#22c55e;">
+        <i class="fas fa-ticket-alt kpi-icon" style="color:#22c55e;"></i>
+        <div class="kpi-val">{{ totalReservations }}</div>
+        <div class="kpi-label">Réservations</div>
+        <div class="kpi-sub">+{{ reservationsThisMonth }} ce mois</div>
+    </div>
+    <div class="kpi kpi-accent" style="border-color:var(--ac-lavender);">
+        <i class="fas fa-shopping-bag kpi-icon" style="color:var(--ac-lavender);"></i>
+        <div class="kpi-val">{{ totalOrders }}</div>
+        <div class="kpi-label">Commandes</div>
+        <div class="kpi-sub">{{ totalProducts }} produits</div>
+    </div>
+    <div class="kpi kpi-accent" style="border-color:var(--ac-pink);">
+        <i class="fas fa-hand-holding-heart kpi-icon" style="color:var(--ac-pink);"></i>
+        <div class="kpi-val">{{ totalDonations }}</div>
+        <div class="kpi-label">Donations</div>
+    </div>
+    <div class="kpi kpi-accent" style="border-color:#f59e0b;">
+        <i class="fas fa-comments kpi-icon" style="color:#f59e0b;"></i>
+        <div class="kpi-val">{{ totalForumPosts }}</div>
+        <div class="kpi-label">Forum</div>
+        <div class="kpi-sub">discussions</div>
+    </div>
+</div>
+
+{# ===== ROW 1: Event Stats + Revenue ===== #}
+<div class="dash-row dash-2-1">
+    <div class="dash-card">
+        <h5><i class="fas fa-calendar-check"></i> Événements — Vue globale</h5>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; text-align:center;">
+            <div>
+                <div style="font-size:1.3rem; font-weight:800; color:var(--ac-blue);">{{ eventStats.upcoming }}</div>
+                <div style="font-size:.7rem; color:#6b7280; font-weight:600;">À VENIR</div>
+            </div>
+            <div>
+                <div style="font-size:1.3rem; font-weight:800; color:#22c55e;">{{ eventStats.ongoing }}</div>
+                <div style="font-size:.7rem; color:#6b7280; font-weight:600;">EN COURS</div>
+            </div>
+            <div>
+                <div style="font-size:1.3rem; font-weight:800; color:#9ca3af;">{{ eventStats.past }}</div>
+                <div style="font-size:.7rem; color:#6b7280; font-weight:600;">TERMINÉS</div>
+            </div>
+            <div>
+                <div style="font-size:1.3rem; font-weight:800; color:#ef4444;">{{ eventStats.full }}</div>
+                <div style="font-size:.7rem; color:#6b7280; font-weight:600;">COMPLETS</div>
             </div>
         </div>
-        
-        <div class="row mb-4">
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                    <div class="card-body">
-                        <i class="fas fa-calendar-check card-icon"></i>
-                        <div class="stat-number">{{ totalReservations ?? 0 }}</div>
-                        <div class="stat-label">Réservations totales</div>
-                        {% if totalReservations > 0 %}
-                            <div class="stat-percentage">100% du total</div>
-                        {% endif %}
+        <hr style="margin:.75rem 0;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.75rem;">
+            <div>
+                <div style="font-size:.72rem; color:#6b7280; font-weight:600; text-transform:uppercase;">Taux d'occupation global</div>
+                <div style="display:flex; align-items:center; gap:.6rem; margin-top:.3rem;">
+                    <div class="progress-sm" style="flex:1;">
+                        <div class="progress-sm-fill" style="width:{{ eventStats.occupancy }}%; background:linear-gradient(90deg,var(--ac-mid),var(--ac-blue));"></div>
                     </div>
+                    <span style="font-weight:800; font-size:.85rem; color:var(--ac-deep);">{{ eventStats.occupancy }}%</span>
                 </div>
+                <div style="font-size:.7rem; color:#9ca3af; margin-top:.2rem;">{{ eventStats.totalTaken }} places prises sur {{ eventStats.totalPlaces }}</div>
             </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card" style="background: linear-gradient(135deg, #36b9cc 0%, #1a6b76 100%);">
-                    <div class="card-body">
-                        <i class="fas fa-calendar-day card-icon"></i>
-                        <div class="stat-number">{{ reservationsThisMonth ?? 0 }}</div>
-                        <div class="stat-label">Réservations (mois)</div>
-                        {% if totalReservations > 0 %}
-                            {% set percentage = ((reservationsThisMonth / totalReservations) * 100)|round(1) %}
-                            <div class="stat-percentage">{{ percentage }}% des réservations</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card" style="background: linear-gradient(135deg, #4e9ef8 0%, #2a6fd6 100%);">
-                    <div class="card-body">
-                        <i class="fas fa-users card-icon"></i>
-                        <div class="stat-number">{{ totalUsers ?? 0 }}</div>
-                        <div class="stat-label">Utilisateurs</div>
-                        {% if totalUsers > 0 %}
-                            {% set percentage = ((totalUsers / (totalUsers + 10)) * 100)|round(1) %}
-                            <div class="stat-percentage">{{ percentage }}% de la capacité</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card stat-card" style="background: linear-gradient(135deg, #7ab4ff 0%, #4e9ef8 100%);">
-                    <div class="card-body">
-                        <i class="fas fa-user-plus card-icon"></i>
-                        <div class="stat-number">{{ newUsersThisMonth ?? 0 }}</div>
-                        <div class="stat-label">Nouveaux (mois)</div>
-                        {% if totalUsers > 0 %}
-                            {% set percentage = ((newUsersThisMonth / totalUsers) * 100)|round(1) %}
-                            <div class="stat-percentage">+{{ percentage }}% ce mois</div>
-                        {% endif %}
-                    </div>
-                </div>
+            <div>
+                <div style="font-size:.72rem; color:#6b7280; font-weight:600; text-transform:uppercase;">Revenus événements</div>
+                <div style="font-weight:800; font-size:1rem; color:#22c55e; margin-top:.3rem;">{{ eventStats.revenueActual|number_format(2, '.', ' ') }} TND</div>
+                <div style="font-size:.7rem; color:#9ca3af;">Potentiel: {{ eventStats.revenuePotential|number_format(2, '.', ' ') }} TND</div>
             </div>
         </div>
-        
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Réservations par statut</h5>
-                    </div>
-                    <div class="card-body">
-                        <div style="height: 300px;">
-                            <canvas id="reservationsChart"></canvas>
-                        </div>
-                        <div class="text-center mt-3">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reservationsDetailsModal">
-                                <i class="fas fa-table me-1"></i> Voir le détail
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Utilisateurs par rôle</h5>
-                    </div>
-                    <div class="card-body">
-                        <div style="height: 300px;">
-                            <canvas id="usersChart"></canvas>
-                        </div>
-                        <div class="text-center mt-3 d-flex justify-content-center gap-2">
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#usersDetailsModal">
-                                <i class="fas fa-table me-1"></i> Voir le détail
-                            </button>
-                            <button type="button" class="btn btn-outline-success" onclick="showUserStats()">
-                                <i class="fas fa-chart-pie me-1"></i> Statistiques
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
     </div>
 
-    <!-- Modal pour les détails des réservations -->
-    <div class="modal fade" id="reservationsDetailsModal" tabindex="-1" aria-labelledby="reservationsDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reservationsDetailsModalLabel">Détails des réservations par statut</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Statut</th>
-                                <th class="text-end">Nombre</th>
-                                <th class="text-end">Pourcentage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set total = reservationsByStatus|reduce((sum, item) => sum + item.count, 0) %}
-                            {% for item in reservationsByStatus|sort((a, b) => b.count <=> a.count) %}
-                                <tr>
-                                    <td>{{ item.status }}</td>
-                                    <td class="text-end">{{ item.count|number_format(0, ',', ' ') }}</td>
-                                    <td class="text-end">{{ total > 0 ? ((item.count / total) * 100)|number_format(2, ',', ' ') }}%</td>
-                                </tr>
-                            {% endfor %}
-                            <tr class="table-active fw-bold">
-                                <td>Total</td>
-                                <td class="text-end">{{ total|number_format(0, ',', ' ') }}</td>
-                                <td class="text-end">100%</td>
-                            </tr>
-                        </tbody>
-                    </table>
+    <div class="dash-card">
+        <h5><i class="fas fa-trophy"></i> Top événements</h5>
+        {% if topEvents|length > 0 %}
+            {% for item in topEvents %}
+            <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; {% if not loop.last %}padding-bottom:.6rem; border-bottom:1px solid #f3f4f6;{% endif %}">
+                <span style="width:22px; height:22px; border-radius:50%; background:{% if loop.index <= 3 %}linear-gradient(135deg,var(--ac-mid),var(--ac-blue)){% else %}#e5e7eb{% endif %}; color:{% if loop.index <= 3 %}#fff{% else %}#6b7280{% endif %}; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:800; flex-shrink:0;">{{ loop.index }}</span>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700; font-size:.8rem; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ item.event.titre }}</div>
+                    <div style="font-size:.68rem; color:#9ca3af;">{{ item.event.lieu }}</div>
                 </div>
+                <span class="badge bg-primary bg-opacity-75" style="font-size:.68rem;">{{ item.reservations }} rés.</span>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:#9ca3af; font-size:.82rem; text-align:center; padding:1rem 0;">Aucun événement</div>
+        {% endif %}
+    </div>
+</div>
+
+{# ===== ROW 2: Charts ===== #}
+<div class="dash-row dash-2">
+    <div class="dash-card">
+        <h5><i class="fas fa-chart-bar"></i> Réservations mensuelles</h5>
+        <div style="height:220px;">
+            <canvas id="monthlyResChart"></canvas>
+        </div>
+    </div>
+    <div class="dash-card">
+        <h5><i class="fas fa-chart-area"></i> Inscriptions mensuelles</h5>
+        <div style="height:220px;">
+            <canvas id="monthlyRegChart"></canvas>
         </div>
     </div>
 </div>
 
-<!-- Modal pour les statistiques utilisateurs -->
-<div class="modal fade" id="userStatsModal" tabindex="-1" aria-labelledby="userStatsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="userStatsModalLabel">Statistiques des Utilisateurs</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="card-title text-muted">Total Utilisateurs</h6>
-                                <h3 class="text-primary">{{ totalUsers ?? 0 }}</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card bg-light">
-                            <div class="card-body text-center">
-                                <h6 class="card-title text-muted">Nouveaux ce mois</h6>
-                                <h3 class="text-success">{{ newUsersThisMonth ?? 0 }}</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Répartition par rôle</h6>
-                        <div style="height: 250px;">
-                            <canvas id="userRoleChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Détails par rôle</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Rôle</th>
-                                        <th class="text-end">Nombre</th>
-                                        <th class="text-end">Pourcentage</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% set total = usersByRole|reduce((sum, user) => sum + user.count, 0) %}
-                                    {% for user in usersByRole %}
-                                        <tr>
-                                            <td>{{ user.role|replace({'_': ' '})|title }}</td>
-                                            <td class="text-end">{{ user.count }}</td>
-                                            <td class="text-end">
-                                                {% if total > 0 %}
-                                                    {{ ((user.count / total) * 100)|round(1) }}%
-                                                {% else %}
-                                                    0%
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="3" class="text-center">Aucune donnée disponible</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                                <tfoot>
-                                    <tr class="table-active">
-                                        <th>Total</th>
-                                        <th class="text-end">{{ total }}</th>
-                                        <th class="text-end">100%</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h6>Inscriptions par mois</h6>
-                        <div style="height: 250px;">
-                            <canvas id="userRegistrationsChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
+{# ===== ROW 3: Users + Reservations breakdown ===== #}
+<div class="dash-row dash-3">
+    <div class="dash-card">
+        <h5><i class="fas fa-user-tag"></i> Utilisateurs par rôle</h5>
+        <div style="height:180px; margin-bottom:.75rem;">
+            <canvas id="usersRoleChart"></canvas>
         </div>
+        <table class="mini-table">
+            <thead><tr><th>Rôle</th><th style="text-align:right;">Nb</th><th style="text-align:right;">%</th></tr></thead>
+            <tbody>
+                {% set uTotal = usersByRole|reduce((s,u) => s + u.count, 0) %}
+                {% for u in usersByRole %}
+                <tr>
+                    <td>
+                        {% if u.role == 'ROLE_ADMIN' %}<span class="badge bg-danger" style="font-size:.68rem;">Admin</span>
+                        {% elseif u.role == 'ROLE_ARTISTE' %}<span class="badge bg-primary" style="font-size:.68rem;">Artiste</span>
+                        {% elseif u.role == 'ROLE_PARTICIPANT' %}<span class="badge bg-success" style="font-size:.68rem;">Participant</span>
+                        {% else %}<span class="badge bg-secondary" style="font-size:.68rem;">{{ u.role|replace({'ROLE_':''})|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right; font-weight:700;">{{ u.count }}</td>
+                    <td style="text-align:right; color:#6b7280;">{{ uTotal > 0 ? ((u.count / uTotal) * 100)|round(1) : 0 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dash-card">
+        <h5><i class="fas fa-clipboard-list"></i> Réservations par statut</h5>
+        <div style="height:180px; margin-bottom:.75rem;">
+            <canvas id="resStatusChart"></canvas>
+        </div>
+        <table class="mini-table">
+            <thead><tr><th>Statut</th><th style="text-align:right;">Nb</th><th style="text-align:right;">%</th></tr></thead>
+            <tbody>
+                {% set rTotal = reservationsByStatus|reduce((s,r) => s + r.count, 0) %}
+                {% for r in reservationsByStatus %}
+                <tr>
+                    <td>
+                        {% if r.status == 'CONFIRMED' %}<span class="badge bg-success" style="font-size:.68rem;">Confirmé</span>
+                        {% elseif r.status == 'CANCELLED' %}<span class="badge bg-danger" style="font-size:.68rem;">Annulé</span>
+                        {% elseif r.status == 'PENDING' %}<span class="badge bg-warning text-dark" style="font-size:.68rem;">En attente</span>
+                        {% else %}<span class="badge bg-secondary" style="font-size:.68rem;">{{ r.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right; font-weight:700;">{{ r.count }}</td>
+                    <td style="text-align:right; color:#6b7280;">{{ rTotal > 0 ? ((r.count / rTotal) * 100)|round(1) : 0 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="dash-card">
+        <h5><i class="fas fa-calendar-plus"></i> Événements mensuels</h5>
+        <div style="height:180px; margin-bottom:.75rem;">
+            <canvas id="monthlyEvChart"></canvas>
+        </div>
+        <table class="mini-table">
+            <thead><tr><th>Mois</th><th style="text-align:right;">Créés</th></tr></thead>
+            <tbody>
+                {% for m in monthlyEvents %}
+                <tr>
+                    <td>{{ m.month }}</td>
+                    <td style="text-align:right; font-weight:700;">{{ m.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
-<!-- Modal pour les détails des utilisateurs -->
-<div class="modal fade" id="usersDetailsModal" tabindex="-1" aria-labelledby="usersDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="usersDetailsModalLabel">Détails des utilisateurs par rôle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Rôle</th>
-                                <th class="text-end">Nombre</th>
-                                <th class="text-end">Pourcentage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set totalUsers = usersByRole|reduce((sum, item) => sum + item.count, 0) %}
-                            {% for item in usersByRole|sort((a, b) => b.count <=> a.count) %}
-                                <tr>
-                                    <td>{{ item.role|replace({'ROLE_': '', '_': ' '})|title }}</td>
-                                    <td class="text-end">{{ item.count|number_format(0, ',', ' ') }}</td>
-                                    <td class="text-end">{{ totalUsers > 0 ? ((item.count / totalUsers) * 100)|number_format(2, ',', ' ') }}%</td>
-                                </tr>
-                            {% endfor %}
-                            <tr class="table-active fw-bold">
-                                <td>Total</td>
-                                <td class="text-end">{{ totalUsers|number_format(0, ',', ' ') }}</td>
-                                <td class="text-end">100%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- Section des statistiques détaillées -->
-    <div id="detailedStats" class="card mt-4" style="display: none;">
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Statistiques détaillées des réservations</h4>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Répartition par statut</h5>
-                    <canvas id="statusChart"></canvas>
-                </div>
-                <div class="col-md-6">
-                    <h5>Détails des réservations</h5>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Statut</th>
-                                    <th class="text-end">Nombre</th>
-                                    <th class="text-end">Pourcentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% set total = reservationsByStatus|reduce((sum, item) => sum + item.count, 0) %}
-                                {% for item in reservationsByStatus %}
-                                <tr>
-                                    <td>{{ item.status }}</td>
-                                    <td class="text-end">{{ item.count }}</td>
-                                    <td class="text-end">{{ total > 0 ? ((item.count / total) * 100)|number_format(1) : 0 }}%</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        function showUserStats() {
-            const modal = new bootstrap.Modal(document.getElementById('userStatsModal'));
-            
-            // Données réelles des inscriptions mensuelles
-            const monthlyData = {{ monthlyRegistrations|json_encode|raw }};
-            const registrationData = {
-                labels: monthlyData.map(item => item.month),
-                datasets: [{
-                    label: 'Inscriptions',
-                    data: monthlyData.map(item => item.count),
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            };
-            
-            console.log('Données mensuelles:', registrationData); // Pour le débogage
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var font = { family: "'Manrope', sans-serif" };
+    Chart.defaults.font.family = font.family;
+    Chart.defaults.font.size = 11;
 
-            // Initialiser le graphique des rôles utilisateurs
-            const roleCtx = document.getElementById('userRoleChart').getContext('2d');
-            new Chart(roleCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: {{ usersByRole|map(u => u.role|replace({'_': ' '})|title)|json_encode|raw }},
-                    datasets: [{
-                        data: {{ usersByRole|map(u => u.count)|json_encode|raw }},
-                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+    var colors = {
+        deep: '#1E0F75', mid: '#1C1DAB', blue: '#3785D8', lavender: '#BF8CE1',
+        sky: '#ADC6E5', pink: '#EBB2C3', green: '#22c55e', red: '#ef4444', amber: '#f59e0b', gray: '#9ca3af'
+    };
 
-            // Initialiser le graphique des inscriptions par mois
-            const regCtx = document.getElementById('userRegistrationsChart').getContext('2d');
-            new Chart(regCtx, {
-                type: 'line',
-                data: registrationData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    }
-                }
-            });
-            
-            modal.show();
-        }
-        
-        function toggleStats() {
-            const statsSection = document.getElementById('detailedStats');
-            const button = document.getElementById('toggleStatsBtn');
-            
-            if (statsSection.style.display === 'none') {
-                statsSection.style.display = 'block';
-                button.innerHTML = '<i class="fas fa-times"></i> Masquer les statistiques';
-                // Initialiser le graphique quand il devient visible
-                initStatusChart();
-            } else {
-                statsSection.style.display = 'none';
-                button.innerHTML = '<i class="fas fa-chart-bar"></i> Voir les statistiques';
-            }
-        }
-        
-        function initStatusChart() {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            const statusData = {{ reservationsByStatus|json_encode|raw }};
-            
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: statusData.map(item => item.status),
-                    datasets: [{
-                        data: statusData.map(item => item.count),
-                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            // Graphique des réservations
-            const reservationsCtx = document.getElementById('reservationsChart');
-            if (reservationsCtx) {
-                new Chart(reservationsCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: {{ (reservationsByStatus|default([]))|map(r => r.status)|json_encode|raw }},
-                        datasets: [{
-                            data: {{ (reservationsByStatus|default([]))|map(r => r.count)|json_encode|raw }},
-                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
-                    }
-                });
-            }
+    // Monthly Reservations Bar
+    new Chart(document.getElementById('monthlyResChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ monthlyReservations|map(m => m.month)|json_encode|raw }},
+            datasets: [{
+                label: 'Réservations',
+                data: {{ monthlyReservations|map(m => m.count)|json_encode|raw }},
+                backgroundColor: colors.blue + '88',
+                borderColor: colors.blue,
+                borderWidth: 1.5,
+                borderRadius: 6,
+                barPercentage: 0.6
+            }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}} }
+    });
 
-            // Graphique des utilisateurs par rôle
-            const usersCtx = document.getElementById('usersChart');
-            if (usersCtx) {
-                new Chart(usersCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: {{ (usersByRole|default([]))|map(u => u.role|replace({'ROLE_': '', '_': ' '})|title)|json_encode|raw }},
-                        datasets: [{
-                            data: {{ (usersByRole|default([]))|map(u => u.count)|json_encode|raw }},
-                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
+    // Monthly Registrations Line
+    new Chart(document.getElementById('monthlyRegChart'), {
+        type: 'line',
+        data: {
+            labels: {{ monthlyRegistrations|map(m => m.month)|json_encode|raw }},
+            datasets: [{
+                label: 'Inscriptions',
+                data: {{ monthlyRegistrations|map(m => m.count)|json_encode|raw }},
+                borderColor: colors.lavender,
+                backgroundColor: colors.lavender + '22',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: colors.lavender,
+                pointRadius: 4
+            }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}} }
+    });
+
+    // Users by Role Doughnut
+    new Chart(document.getElementById('usersRoleChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ usersByRole|map(u => u.role|replace({'ROLE_': ''})|title)|json_encode|raw }},
+            datasets: [{ data: {{ usersByRole|map(u => u.count)|json_encode|raw }}, backgroundColor: [colors.red, colors.blue, colors.green, colors.amber], borderWidth: 0 }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}} }
+    });
+
+    // Reservations by Status Doughnut
+    new Chart(document.getElementById('resStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ reservationsByStatus|map(r => r.status)|json_encode|raw }},
+            datasets: [{ data: {{ reservationsByStatus|map(r => r.count)|json_encode|raw }}, backgroundColor: [colors.green, colors.amber, colors.red, colors.gray], borderWidth: 0 }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}} }
+    });
+
+    // Monthly Events Bar
+    new Chart(document.getElementById('monthlyEvChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ monthlyEvents|map(m => m.month)|json_encode|raw }},
+            datasets: [{
+                label: 'Événements',
+                data: {{ monthlyEvents|map(m => m.count)|json_encode|raw }},
+                backgroundColor: colors.lavender + '88',
+                borderColor: colors.lavender,
+                borderWidth: 1.5,
+                borderRadius: 6,
+                barPercentage: 0.6
+            }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{grid:{display:false}}} }
+    });
+});
+</script>
 {% endblock %}

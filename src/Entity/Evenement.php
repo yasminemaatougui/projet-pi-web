@@ -82,6 +82,15 @@ class Evenement
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $layoutType = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $layoutRows = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $layoutCols = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -221,6 +230,50 @@ class Evenement
         $this->image = $image;
 
         return $this;
+    }
+
+    public function getLayoutType(): ?string
+    {
+        return $this->layoutType;
+    }
+
+    public function setLayoutType(?string $layoutType): static
+    {
+        $this->layoutType = $layoutType;
+        return $this;
+    }
+
+    public function getLayoutRows(): ?int
+    {
+        return $this->layoutRows;
+    }
+
+    public function setLayoutRows(?int $layoutRows): static
+    {
+        $this->layoutRows = $layoutRows;
+        return $this;
+    }
+
+    public function getLayoutCols(): ?int
+    {
+        return $this->layoutCols;
+    }
+
+    public function setLayoutCols(?int $layoutCols): static
+    {
+        $this->layoutCols = $layoutCols;
+        return $this;
+    }
+
+    public function getTakenSeats(): array
+    {
+        $seats = [];
+        foreach ($this->reservations as $r) {
+            if ($r->getSeatLabel()) {
+                $seats[$r->getSeatLabel()] = $r->getParticipant()->getPrenom() . ' ' . $r->getParticipant()->getNom()[0] . '.';
+            }
+        }
+        return $seats;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable

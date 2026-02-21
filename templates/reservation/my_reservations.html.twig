@@ -3,183 +3,254 @@
 {% block title %}{{ pageTitle }}{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>{{ pageTitle }}</h1>
-        <div class="btn-group">
-            {% if isAdmin %}
-                <a href="{{ path('admin_stats') }}" class="btn btn-primary">
-                    <i class="fas fa-chart-bar me-1"></i> Statistiques
-                </a>
-            {% endif %}
-            {% if not isAdmin %}
-                <a href="{{ path('app_evenement_index') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i> Nouvelle réservation
-                </a>
-            {% endif %}
+{% if isAdmin %}
+{# ===================== ADMIN: same UI as events ===================== #}
+<div class="bo-page-header">
+    <h1>
+        <i class="fas fa-ticket-alt"></i> Réservations
+        <span class="badge bg-primary bg-opacity-75">{{ total }}{% if total_pages > 1 %} / page{% endif %}</span>
+    </h1>
+    <div class="bo-actions">
+        <a href="{{ path('admin_stats') }}" class="btn btn-outline-primary"><i class="fas fa-chart-bar me-1"></i> Stats</a>
+    </div>
+</div>
+
+<form method="get" action="{{ path('app_reservation_my') }}" class="bo-filter-bar">
+    <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+            <label>Recherche</label>
+            <input type="text" name="q" class="form-control" value="{{ filter_input.q|default('') }}" placeholder="Événement, lieu, participant…">
+        </div>
+        <div class="col-6 col-md-2">
+            <label>Date début</label>
+            <input type="date" name="date_start" class="form-control" value="{{ filter_input.date_start|default('') }}">
+        </div>
+        <div class="col-6 col-md-2">
+            <label>Date fin</label>
+            <input type="date" name="date_end" class="form-control" value="{{ filter_input.date_end|default('') }}">
+        </div>
+        <div class="col-6 col-md-2">
+            <label>Statut</label>
+            <select name="status" class="form-select">
+                <option value="" {{ filter_input.status|default('') == '' ? 'selected' : '' }}>Tous</option>
+                <option value="CONFIRMED" {{ filter_input.status|default('') == 'CONFIRMED' ? 'selected' : '' }}>Confirmé</option>
+                <option value="PENDING" {{ filter_input.status|default('') == 'PENDING' ? 'selected' : '' }}>En attente</option>
+                <option value="CANCELLED" {{ filter_input.status|default('') == 'CANCELLED' ? 'selected' : '' }}>Annulé</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label>Tri</label>
+            <select name="sort" class="form-select">
+                <option value="date_desc" {{ filter_input.sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>Réservation (récent → ancien)</option>
+                <option value="date_asc" {{ filter_input.sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>Réservation (ancien → récent)</option>
+                <option value="event_date_desc" {{ filter_input.sort|default('date_desc') == 'event_date_desc' ? 'selected' : '' }}>Événement (récent → ancien)</option>
+                <option value="event_date_asc" {{ filter_input.sort|default('date_desc') == 'event_date_asc' ? 'selected' : '' }}>Événement (ancien → récent)</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4 d-flex gap-2">
+            <input type="hidden" name="page" value="1">
+            <button class="btn btn-primary flex-grow-1"><i class="fas fa-search me-1"></i> Filtrer</button>
+            <a href="{{ path('app_reservation_my') }}" class="btn btn-outline-secondary">Réinitialiser</a>
         </div>
     </div>
+</form>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" action="{{ path('app_reservation_my') }}" class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
-                    <label class="form-label">Recherche</label>
-                    <input
-                        type="text"
-                        name="q"
-                        class="form-control"
-                        value="{{ filter_input.q|default('') }}"
-                        placeholder="Evenement, lieu, participant"
-                    >
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Date debut</label>
-                    <input
-                        type="date"
-                        name="date_start"
-                        class="form-control"
-                        value="{{ filter_input.date_start|default('') }}"
-                    >
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Date fin</label>
-                    <input
-                        type="date"
-                        name="date_end"
-                        class="form-control"
-                        value="{{ filter_input.date_end|default('') }}"
-                    >
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Statut</label>
-                    <select name="status" class="form-select">
-                        <option value="" {{ filter_input.status|default('') == '' ? 'selected' : '' }}>Tous</option>
-                        <option value="CONFIRMED" {{ filter_input.status|default('') == 'CONFIRMED' ? 'selected' : '' }}>CONFIRMED</option>
-                        <option value="CANCELLED" {{ filter_input.status|default('') == 'CANCELLED' ? 'selected' : '' }}>CANCELLED</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label">Tri</label>
-                    <select name="sort" class="form-select">
-                        <option value="date_desc" {{ filter_input.sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>
-                            Reservation (recent -> ancien)
-                        </option>
-                        <option value="date_asc" {{ filter_input.sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>
-                            Reservation (ancien -> recent)
-                        </option>
-                        <option value="event_date_desc" {{ filter_input.sort|default('date_desc') == 'event_date_desc' ? 'selected' : '' }}>
-                            Evenement (recent -> ancien)
-                        </option>
-                        <option value="event_date_asc" {{ filter_input.sort|default('date_desc') == 'event_date_asc' ? 'selected' : '' }}>
-                            Evenement (ancien -> recent)
-                        </option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-3 d-flex gap-2">
-                    <button class="btn btn-primary">Filtrer</button>
-                    <a class="btn btn-outline-secondary" href="{{ path('app_reservation_my') }}">Reinitialiser</a>
-                </div>
-            </form>
+<div class="bo-table-card">
+    {% if reservations is not empty %}
+        <div class="table-responsive">
+            <table class="table bo-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Événement</th>
+                        <th>Participant</th>
+                        <th>Place</th>
+                        <th>Date résa</th>
+                        <th>Date événement</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                        <tr>
+                            <td class="text-muted">{{ r.id }}</td>
+                            <td>
+                                <div class="fw-semibold">
+                                    <a href="{{ path('app_evenement_show', {id: r.evenement.id}) }}" style="color:inherit; text-decoration:none;">
+                                        {{ r.evenement.titre|length > 40 ? r.evenement.titre|slice(0, 40) ~ '…' : r.evenement.titre }}
+                                    </a>
+                                </div>
+                                <small class="text-muted">{{ r.evenement.lieu }}</small>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ r.participant.prenom }} {{ r.participant.nom }}</div>
+                                <small class="text-muted">{{ r.participant.email }}</small>
+                            </td>
+                            <td>
+                                {% if r.seatLabel %}
+                                    <span class="badge bg-info bg-opacity-75">{{ r.seatLabel }}</span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                {{ r.dateReservation ? r.dateReservation|date('d/m/Y H:i') : '—' }}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                {{ r.evenement.dateDebut ? r.evenement.dateDebut|date('d/m/Y H:i') : '—' }}
+                            </td>
+                            <td>
+                                {% if r.status == 'CONFIRMED' %}
+                                    <span class="badge bg-success bg-opacity-75">Confirmé</span>
+                                {% elseif r.status == 'CANCELLED' %}
+                                    <span class="badge bg-danger bg-opacity-75">Annulé</span>
+                                {% elseif r.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-75">{{ r.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="{{ path('app_evenement_show', {id: r.evenement.id}) }}" class="btn-action btn-view" title="Voir l'événement"><i class="fas fa-eye"></i></a>
+                                    <form method="post" action="{{ path('app_reservation_cancel', {id: r.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette réservation ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ r.id) }}">
+                                        <button type="submit" class="btn-action btn-del" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </div>
 
-    {% if reservations is empty %}
-        <div class="alert alert-info">
-            {% if isAdmin %}
-                Aucune réservation n'a été effectuée pour le moment.
-            {% else %}
-                Vous n'avez aucune réservation pour le moment. 
-                <a href="{{ path('app_evenement_index') }}">Voir les événements disponibles</a>.
-            {% endif %}
-        </div>
-    {% else %}
-        {% if isAdmin %}
-            <div class="card shadow-sm">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Événement</th>
-                                <th>Participant</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reservation in reservations %}
-                                <tr>
-                                    <td>#{{ reservation.id }}</td>
-                                    <td>{{ reservation.evenement.titre }}</td>
-                                    <td>{{ reservation.participant.prenom }} {{ reservation.participant.nom }}</td>
-                                    <td>{{ reservation.evenement.dateDebut|date('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <form method="post" 
-                                              action="{{ path('app_reservation_cancel', {'id': reservation.id}) }}" 
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');" 
-                                              class="d-inline p-0">
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% else %}
-            <div class="row">
-                {% for reservation in reservations %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                <span>{{ reservation.evenement.titre }}</span>
-                                <span class="badge bg-light text-primary">Confirmée</span>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">
-                                    <strong>Date de l'événement:</strong> {{ reservation.evenement.dateDebut|date('d/m/Y H:i') }}<br>
-                                    <strong>Lieu:</strong> {{ reservation.evenement.lieu }}<br>
-                                    <strong>Réservé le:</strong> {{ reservation.dateReservation|date('d/m/Y H:i') }}
-                                </p>
-                                <a href="{{ path('app_evenement_show', {'id': reservation.evenement.id}) }}" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye me-1"></i> Voir l'événement
-                                </a>
-                                
-                                <form method="post" 
-                                      action="{{ path('app_reservation_cancel', {'id': reservation.id}) }}" 
-                                      onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?');" 
-                                      class="d-inline-block">
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-times me-1"></i> Annuler
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+        {% if total_pages > 1 %}
+            {% set qp = filter_input|default({}) %}
+            <div class="bo-pagination">
+                <div class="page-info">Page {{ page }} sur {{ total_pages }} — {{ total }} résultat{{ total > 1 ? 's' }}</div>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item {{ page == 1 ? 'disabled' }}">
+                            <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: page - 1})) }}"><i class="fas fa-chevron-left"></i></a>
+                        </li>
+                        {% for p in 1..total_pages %}
+                            <li class="page-item {{ p == page ? 'active' }}">
+                                <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: p})) }}">{{ p }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {{ page == total_pages ? 'disabled' }}">
+                            <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: page + 1})) }}"><i class="fas fa-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         {% endif %}
+    {% else %}
+        <div class="bo-empty">
+            <i class="fas fa-ticket-alt"></i>
+            <p>Aucune réservation trouvée</p>
+        </div>
     {% endif %}
+</div>
+
+{% else %}
+{# ===================== PARTICIPANT: card view ===================== #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-ticket-alt me-2"></i>{{ pageTitle }}</h1>
+    <a href="{{ path('app_evenement_index') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Nouvelle réservation
+    </a>
+</div>
+
+<form method="get" action="{{ path('app_reservation_my') }}" class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Recherche</label>
+                <input type="text" name="q" class="form-control" value="{{ filter_input.q|default('') }}" placeholder="Événement, lieu…">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Date début</label>
+                <input type="date" name="date_start" class="form-control" value="{{ filter_input.date_start|default('') }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Date fin</label>
+                <input type="date" name="date_end" class="form-control" value="{{ filter_input.date_end|default('') }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Tri</label>
+                <select name="sort" class="form-select">
+                    <option value="date_desc" {{ filter_input.sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>Récent → ancien</option>
+                    <option value="date_asc" {{ filter_input.sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>Ancien → récent</option>
+                    <option value="event_date_desc" {{ filter_input.sort|default('date_desc') == 'event_date_desc' ? 'selected' : '' }}>Événement récent</option>
+                    <option value="event_date_asc" {{ filter_input.sort|default('date_desc') == 'event_date_asc' ? 'selected' : '' }}>Événement ancien</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1">Filtrer</button>
+                <a class="btn btn-outline-secondary" href="{{ path('app_reservation_my') }}">Réinit.</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if reservations is empty %}
+    <div class="alert alert-info">
+        Vous n'avez aucune réservation. <a href="{{ path('app_evenement_index') }}">Voir les événements disponibles</a>.
+    </div>
+{% else %}
+    <div class="row">
+        {% for reservation in reservations %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm" style="border-radius:14px; overflow:hidden;">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="background:linear-gradient(135deg,var(--ac-deep),var(--ac-mid)); color:#fff;">
+                        <span class="fw-semibold">{{ reservation.evenement.titre }}</span>
+                        <span class="badge bg-light text-dark">Confirmée</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text mb-2">
+                            <strong>Date :</strong> {{ reservation.evenement.dateDebut|date('d/m/Y H:i') }}<br>
+                            <strong>Lieu :</strong> {{ reservation.evenement.lieu }}<br>
+                            {% if reservation.seatLabel %}<strong>Place :</strong> <span class="badge bg-info">{{ reservation.seatLabel }}</span><br>{% endif %}
+                            <strong>Réservé le :</strong> {{ reservation.dateReservation|date('d/m/Y H:i') }}
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="{{ path('app_evenement_show', {id: reservation.evenement.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> Voir l'événement
+                            </a>
+                            <form method="post" action="{{ path('app_reservation_cancel', {id: reservation.id}) }}" class="d-inline" onsubmit="return confirm('Annuler cette réservation ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ reservation.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-times me-1"></i> Annuler
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 
     {% if total_pages > 1 %}
-        {% set query = filter_input|default({}) %}
-        <nav class="mt-4" aria-label="Pagination">
-            <ul class="pagination justify-content-center flex-wrap">
-                <li class="page-item {{ page == 1 ? 'disabled' : '' }}">
-                    <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: page == 1 ? 1 : page - 1})) }}">Precedent</a>
+        {% set qp = filter_input|default({}) %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ page == 1 ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: page - 1})) }}"><i class="fas fa-chevron-left"></i></a>
                 </li>
-                {% for i in 1..total_pages %}
-                    <li class="page-item {{ page == i ? 'active' : '' }}">
-                        <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: i})) }}">{{ i }}</a>
+                {% for p in 1..total_pages %}
+                    <li class="page-item {{ p == page ? 'active' }}">
+                        <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: p})) }}">{{ p }}</a>
                     </li>
                 {% endfor %}
-                <li class="page-item {{ page == total_pages ? 'disabled' : '' }}">
-                    <a class="page-link" href="{{ path('app_reservation_my', query|merge({page: page == total_pages ? total_pages : page + 1})) }}">Suivant</a>
+                <li class="page-item {{ page == total_pages ? 'disabled' }}">
+                    <a class="page-link" href="{{ path('app_reservation_my', qp|merge({page: page + 1})) }}"><i class="fas fa-chevron-right"></i></a>
                 </li>
             </ul>
         </nav>
     {% endif %}
+{% endif %}
+{% endif %}
 {% endblock %}

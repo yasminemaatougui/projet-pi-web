@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background:#f4f5f7; font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7; padding:40px 0;">
+        <tr>
+            <td align="center">
+                <table width="560" cellpadding="0" cellspacing="0" style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,.06);">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#1e0f75,#6d28d9); padding:32px 40px; text-align:center;">
+                            <h1 style="margin:0; color:#fff; font-size:22px; font-weight:700;">Art Connect</h1>
+                            <p style="margin:6px 0 0; color:rgba(255,255,255,.8); font-size:14px;">Vérification de votre adresse email</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:36px 40px;">
+                            <p style="margin:0 0 16px; color:#1f2937; font-size:16px;">
+                                Bonjour <strong>{{ user.prenom }}</strong>,
+                            </p>
+                            <p style="margin:0 0 24px; color:#4b5563; font-size:14px; line-height:1.6;">
+                                Merci de vous être inscrit sur Art Connect. Veuillez cliquer sur le bouton ci-dessous pour vérifier votre adresse email et activer votre compte.
+                            </p>
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ verificationUrl }}" style="display:inline-block; background:linear-gradient(135deg,#1e0f75,#6d28d9); color:#fff; padding:14px 40px; border-radius:10px; text-decoration:none; font-weight:700; font-size:15px;">
+                                            Vérifier mon email
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin:28px 0 8px; color:#6b7280; font-size:12px; line-height:1.5;">
+                                Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :
+                            </p>
+                            <p style="margin:0 0 24px; color:#6d28d9; font-size:12px; word-break:break-all;">
+                                {{ verificationUrl }}
+                            </p>
+                            <p style="margin:0; color:#9ca3af; font-size:12px;">
+                                Ce lien expire dans {{ ttlHours }} heures. Si vous n'avez pas créé de compte, ignorez cet email.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f9fafb; padding:20px 40px; text-align:center; border-top:1px solid #e5e7eb;">
+                            <p style="margin:0; color:#9ca3af; font-size:12px;">
+                                &copy; {{ 'now'|date('Y') }} Art Connect — Tous droits réservés
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
