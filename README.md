@@ -104,7 +104,7 @@ Ouvrez ensuite votre navigateur à l'adresse indiquée (généralement `http://l
 
 ---
 
-## 📚 Fonctionnalités Disponibles
+## 📚 Fonctionnalités Disponibles (ArtConnect) 
 
 * **Authentification** : Inscription et Connexion (Participant, Artiste, Admin).
 * **Back-Office (Admin)** : Gestion des utilisateurs, événements, dons, produits et commandes.
