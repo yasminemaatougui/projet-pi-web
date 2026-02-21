@@ -74,6 +74,37 @@ class ReservationRepository extends ServiceEntityRepository
         return $formattedResults;
     }
 
+    public function getMonthlyReservations(int $months = 6): array
+    {
+        $start = (new \DateTime())->modify("-{$months} months")->modify('first day of this month');
+        $period = new \DatePeriod(
+            new \DateTime($start->format('Y-m-01')),
+            new \DateInterval('P1M'),
+            new \DateTime((new \DateTime())->format('Y-m-t'))
+        );
+
+        $results = [];
+        foreach ($period as $date) {
+            $results[$date->format('Y-m')] = ['month' => $date->format('M Y'), 'count' => 0];
+        }
+
+        $rows = $this->createQueryBuilder('r')
+            ->select('r.dateReservation')
+            ->where('r.dateReservation >= :start')
+            ->setParameter('start', $start)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($rows as $row) {
+            $key = $row['dateReservation']->format('Y-m');
+            if (isset($results[$key])) {
+                $results[$key]['count']++;
+            }
+        }
+
+        return array_values($results);
+    }
+
     public function searchAndSort(array $filters, int $page, int $perPage, ?User $participant, bool $isAdmin): Paginator
     {
         $qb = $this->createQueryBuilder('r')

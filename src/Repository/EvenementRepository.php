@@ -117,18 +117,102 @@ class EvenementRepository extends ServiceEntityRepository
         return new Paginator($query);
     }
 
-//    /**
-//     * @return Evenement[] Returns an array of Evenement objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function getStatsOverview(): array
+    {
+        $now = new \DateTime();
+        $all = $this->findAll();
+        $total = count($all);
+        $upcoming = 0;
+        $ongoing = 0;
+        $past = 0;
+        $full = 0;
+        $totalPlaces = 0;
+        $totalTaken = 0;
+        $totalRevenuePotential = 0.0;
+        $totalRevenueActual = 0.0;
+
+        foreach ($all as $ev) {
+            $places = $ev->getNbPlaces();
+            $taken = $ev->getReservations()->count();
+            $totalPlaces += $places;
+            $totalTaken += $taken;
+            $totalRevenuePotential += ($ev->getPrix() ?? 0) * $places;
+            $totalRevenueActual += ($ev->getPrix() ?? 0) * $taken;
+
+            if ($ev->getDateFin() < $now) {
+                $past++;
+            } elseif ($ev->getDateDebut() <= $now && $ev->getDateFin() >= $now) {
+                $ongoing++;
+            } else {
+                $upcoming++;
+            }
+            if ($taken >= $places) {
+                $full++;
+            }
+        }
+
+        $occupancy = $totalPlaces > 0 ? round($totalTaken / $totalPlaces * 100, 1) : 0;
+
+        return [
+            'total' => $total,
+            'upcoming' => $upcoming,
+            'ongoing' => $ongoing,
+            'past' => $past,
+            'full' => $full,
+            'totalPlaces' => $totalPlaces,
+            'totalTaken' => $totalTaken,
+            'occupancy' => $occupancy,
+            'revenuePotential' => $totalRevenuePotential,
+            'revenueActual' => $totalRevenueActual,
+        ];
+    }
+
+    public function getTopEvents(int $limit = 5): array
+    {
+        $events = $this->createQueryBuilder('e')
+            ->leftJoin('e.reservations', 'r')
+            ->addSelect('COUNT(r.id) as resCount')
+            ->groupBy('e.id')
+            ->orderBy('resCount', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($events as $row) {
+            $result[] = ['event' => $row[0], 'reservations' => (int) ($row['resCount'] ?? 0)];
+        }
+        return $result;
+    }
+
+    public function getMonthlyEvents(int $months = 6): array
+    {
+        $start = (new \DateTime())->modify("-{$months} months")->modify('first day of this month');
+        $period = new \DatePeriod(
+            new \DateTime($start->format('Y-m-01')),
+            new \DateInterval('P1M'),
+            new \DateTime((new \DateTime())->format('Y-m-t'))
+        );
+
+        $results = [];
+        foreach ($period as $date) {
+            $results[$date->format('Y-m')] = ['month' => $date->format('M Y'), 'count' => 0];
+        }
+
+        $events = $this->createQueryBuilder('e')
+            ->select('e.createdAt')
+            ->where('e.createdAt >= :start')
+            ->setParameter('start', $start)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($events as $row) {
+            $key = $row['createdAt']->format('Y-m');
+            if (isset($results[$key])) {
+                $results[$key]['count']++;
+            }
+        }
+
+        return array_values($results);
+    }
 }

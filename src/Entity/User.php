@@ -14,9 +14,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_EMAIL_PENDING = 'EMAIL_PENDING';
+    public const STATUS_EMAIL_VERIFIED = 'EMAIL_VERIFIED';
     public const STATUS_APPROVED = 'APPROVED';
     public const STATUS_REJECTED = 'REJECTED';
+    public const STATUS_SUSPENDED = 'SUSPENDED';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -50,8 +52,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(length: 20, options: ['default' => self::STATUS_APPROVED])]
-    private string $status = self::STATUS_APPROVED;
+    #[ORM\Column(length: 20, options: ['default' => self::STATUS_EMAIL_PENDING])]
+    private string $status = self::STATUS_EMAIL_PENDING;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $emailVerificationToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $emailVerificationSentAt = null;
 
     public function __construct()
     {
@@ -194,8 +202,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
+    }
+
+    public function getEmailVerificationToken(): ?string
+    {
+        return $this->emailVerificationToken;
+    }
+
+    public function setEmailVerificationToken(?string $token): static
+    {
+        $this->emailVerificationToken = $token;
+        return $this;
+    }
+
+    public function getEmailVerificationSentAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerificationSentAt;
+    }
+
+    public function setEmailVerificationSentAt(?\DateTimeImmutable $sentAt): static
+    {
+        $this->emailVerificationSentAt = $sentAt;
+        return $this;
+    }
+
+    public function generateEmailVerificationToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->emailVerificationToken = $token;
+        $this->emailVerificationSentAt = new \DateTimeImmutable();
+        return $token;
+    }
+
+    public function isEmailVerificationTokenExpired(int $ttlHours = 48): bool
+    {
+        if (!$this->emailVerificationSentAt) {
+            return true;
+        }
+        return $this->emailVerificationSentAt->modify("+{$ttlHours} hours") < new \DateTimeImmutable();
+    }
+
+    public function getFullName(): string
+    {
+        return $this->prenom . ' ' . $this->nom;
     }
 
     #[ORM\OneToMany(mappedBy: 'organisateur', targetEntity: Evenement::class)]
